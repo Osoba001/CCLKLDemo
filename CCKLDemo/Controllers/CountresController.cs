@@ -19,7 +19,7 @@ namespace CCKLDemo.Controllers
         }
 
         [HttpPost("save-changes")]
-        public async Task<IActionResult> InsertCountriesWithSaveChanges([FromBody]int n)
+        public async Task<IActionResult> InsertCountriesWithSaveChanges(int n)
         {
             _context.Countries.AddRange(GenerateCountries(n));
 
@@ -27,8 +27,14 @@ namespace CCKLDemo.Controllers
             return Ok();
 
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Get(int n)
+        {
+            return Ok(await _context.Countries.Take(n).ToArrayAsync());
+        }
         [HttpPost("bulk-insert")]
-        public async Task<IActionResult> InsertCountriesWithBulkInsert([FromBody] int n)
+        public async Task<IActionResult> InsertCountriesWithBulkInsert(int n)
         {
             await _context.BulkInsertAsync(GenerateCountries(n));
             return Ok();

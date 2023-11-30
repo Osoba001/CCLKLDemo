@@ -9,6 +9,12 @@ builder.Services.AddControllers();
 builder.Services.AddSqlServer<AccountDbContext>("Data Source=.;Initial Catalog=AccountDb;Integrated Security=True; Encrypt=False");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMiniProfiler(opt =>
+{
+    opt.RouteBasePath = "/profiler";
+    opt.PopupRenderPosition = StackExchange.Profiling.RenderPosition.Left;
+}).AddEntityFramework();
+
 
 var app = builder.Build();
 
@@ -17,6 +23,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseMiniProfiler();
 }
 
 app.UseHttpsRedirection();

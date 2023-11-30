@@ -18,11 +18,32 @@ namespace CCKLDemo.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateMarkrts([FromBody] int n)
+        public async Task<IActionResult> CreateMarkrts(int n)
+        {
+            _context.Markets.AddRange(await GenerateMarkrts(n));
+            return Ok(await _context.SaveChangesAsync());
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Get(int n)
+        {
+            return Ok(await _context.Markets.Take(n).Select(x => new
+            {
+                x.Id,
+                x.Name,
+                Sales=x.purchases.Sum(x=>x.Amount),
+                country= x.Country.Name,
+                x.CreatedDate
+            }).ToArrayAsync());
+        }
+
+        [HttpPost("bulk")]
+        public async Task<IActionResult> CreateBulkMarkrts(int n)
         {
             await _context.BulkInsertAsync(await GenerateMarkrts(n));
             return Ok();
         }
+        
         [HttpDelete]
         public async Task<IActionResult> DeleteMarkrts()
         {
@@ -38,7 +59,7 @@ namespace CCKLDemo.Controllers
             Market[] customers = new Market[n];
             for (int i = 0; i < n; i++)
             {
-                int cid = rdm.Next(1, 10);
+                int cid = rdm.Next(1, 9);
                 DateTime dob = DateTime.UtcNow.AddYears(-cid - 20);
                 var customer = new Market { CountryId = countries[cid] };
                 customers[i] = customer;

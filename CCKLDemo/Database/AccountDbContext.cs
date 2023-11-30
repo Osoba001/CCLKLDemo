@@ -18,6 +18,12 @@ namespace CCKLDemo.Database
                     dbCreator.CreateTables();
             }
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            new PurchaseEntityConfig().Configure(modelBuilder.Entity<Purchase>());
+        }
+
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Market> Markets { get; set; }
         public DbSet<Country> Countries { get; set; }

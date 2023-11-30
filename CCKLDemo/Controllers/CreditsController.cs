@@ -1,5 +1,6 @@
 ﻿using CCKLDemo.Database;
 using CCKLDemo.Database.Models;
+using EFCore.BulkExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,20 +16,47 @@ namespace CCKLDemo.Controllers
         {
             _context = context;
         }
+        [HttpGet]
+        public async Task<IActionResult> Get(int n)
+        {
+            return Ok(await _context.Credits.Take(n).ToArrayAsync());
+        }
+        [HttpPost]
+        public async Task<IActionResult> PostCredits(int n)
+        {
+             _context.AddRange( await GenerateCredits(n));
+            return Ok(await _context.SaveChangesAsync());
+        }
+
+        [HttpPost("bulk")]
+        public async Task<IActionResult> PostBulkCredits(int n)
+        {
+            await _context.BulkInsertAsync(await GenerateCredits(n));
+            return Ok();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteCredit()
+        {
+            await _context.BulkDeleteAsync(await _context.Credits.ToArrayAsync());
+            return Ok();
+        }
 
         private async Task<Credit[]> GenerateCredits(int n)
         {
-            var countries = await _context.Customers.AsNoTracking().OrderBy(x => x.Purchases).Take(10).Select(x => x.Id).ToArrayAsync();
+            var customers = await _context.Customers.AsNoTracking().OrderBy(x => x.OtherName).Take(10).Select(x => x.Id).ToArrayAsync();
             var rdm = new Random();
-            Credit[] customers = new Credit[n];
+            Credit[] credits = new Credit[n];
             for (int i = 0; i < n; i++)
             {
-                int cid = rdm.Next(1, 10);
-                DateTime dob = DateTime.UtcNow.AddYears(-cid - 20);
-                var customer = new Credit {  };
-                customers[i] = customer;
+                int amount = rdm.Next(10, 100000);
+                var cid = rdm.Next(1, 9);
+                var customerId = customers[cid];
+                DateTime date = DateTime.UtcNow.AddDays(-cid);
+                var credit = new Credit { Amount=amount, CreatedDate=date, CustomerId =customerId };
+                credits[i] = credit;
             }
-            return customers;
+            return credits;
         }
     }
 }

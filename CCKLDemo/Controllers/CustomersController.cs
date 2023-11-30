@@ -17,9 +17,10 @@ namespace CCKLDemo.Controllers
             _context = context;
         }
         [HttpPost] 
-        public async Task<IActionResult> Post([FromBody] int n)
+        public async Task<IActionResult> Post(int n)
         {
-            await _context.BulkInsertAsync( await GenerateCustomer(n));
+            _context.Customers.AddRange(await GenerateCustomer(n));
+            await _context.SaveChangesAsync();
             return Ok();
         }
 
@@ -27,8 +28,22 @@ namespace CCKLDemo.Controllers
         public async Task<IActionResult> DeleteCustomers()
         {
            var customers= await _context.Customers.ToArrayAsync();
-            await _context.BulkDeleteAsync(customers);
+           await _context.BulkDeleteAsync(customers);
             return Ok();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetCustomers()
+        {
+            var customers = await _context.Customers.AsNoTracking().Take(1000).Select(x => new
+            {
+                x.Id,
+                balance = x.Credits.Sum(x => x.Amount) - x.Purchases.Sum(x => x.Amount),
+                x.DOB,
+                x.Country.Name
+            }).ToArrayAsync();
+
+            return Ok(customers);
         }
 
         private async Task<Customer[]> GenerateCustomer(int n)
@@ -38,9 +53,9 @@ namespace CCKLDemo.Controllers
             Customer[] customers = new Customer[n];
             for (int i = 0; i < n; i++)
             {
-                int cid = rdm.Next(1,10);
+                int cid = rdm.Next(1,9);
                 DateTime dob= DateTime.UtcNow.AddYears(-cid-20);
-                var customer = new Customer { CountryId = countries[cid], DOB = dob };
+                var customer = new Customer() { CountryId = countries[cid], DOB = dob, Id=Guid.NewGuid() };
                 customers[i] = customer;
             }
             return customers;

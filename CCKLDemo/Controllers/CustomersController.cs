@@ -35,7 +35,20 @@ namespace CCKLDemo.Controllers
         [HttpGet]
         public async Task<IActionResult> GetCustomers()
         {
-            var customers = await _context.Customers.AsNoTracking().Take(1000).Select(x => new
+            var customers = await _context.Customers.AsNoTracking().Select(x => new
+            {
+                x.Id,
+                balance = x.Credits.Sum(x => x.Amount) - x.Purchases.Sum(x => x.Amount),
+                x.DOB,
+                x.Country.Name
+            }).ToArrayAsync();
+
+            return Ok(customers);
+        }
+        [HttpGet("without-no-tracking")]
+        public async Task<IActionResult> GetCustomersWithoutNoTracking()
+        {
+            var customers = await _context.Customers.Select(x => new
             {
                 x.Id,
                 balance = x.Credits.Sum(x => x.Amount) - x.Purchases.Sum(x => x.Amount),
@@ -53,8 +66,8 @@ namespace CCKLDemo.Controllers
             Customer[] customers = new Customer[n];
             for (int i = 0; i < n; i++)
             {
-                int cid = rdm.Next(1,9);
-                DateTime dob= DateTime.UtcNow.AddYears(-cid-20);
+                int cid = rdm.Next(1,49);
+                DateTime dob= DateTime.UtcNow.AddYears(cid);
                 var customer = new Customer() { CountryId = countries[cid], DOB = dob, Id=Guid.NewGuid() };
                 customers[i] = customer;
             }

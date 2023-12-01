@@ -29,9 +29,24 @@ namespace CCKLDemo.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(int n)
+        public async Task<IActionResult> Get()
         {
-            return Ok(await _context.Countries.Take(n).ToArrayAsync());
+            var res = await _context.Countries.AsNoTracking().Select(
+                x=> new
+                {
+                    x.Id,
+                    x.Name,
+                    Markets= x.Markets.Length,
+                    Customers=x.Owners.Length,
+                }).ToArrayAsync();
+            return Ok(res);
+        }
+
+
+        [HttpGet("without-no-tracking")]
+        public async Task<IActionResult> GetWithoutNoTracking()
+        {
+            return Ok(await _context.Countries.Take(2).Include(x=>x.Markets).Include(x=>x.Owners).ToArrayAsync());
         }
         [HttpPost("bulk-insert")]
         public async Task<IActionResult> InsertCountriesWithBulkInsert(int n)

@@ -25,9 +25,9 @@ namespace CCKLDemo.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Get(int n)
+        public async Task<IActionResult> Get()
         {
-            return Ok(await _context.Markets.Take(n).Select(x => new
+            return Ok(await _context.Markets.AsNoTracking().Select(x => new
             {
                 x.Id,
                 x.Name,
@@ -59,8 +59,8 @@ namespace CCKLDemo.Controllers
             Market[] customers = new Market[n];
             for (int i = 0; i < n; i++)
             {
-                int cid = rdm.Next(1, 9);
-                DateTime dob = DateTime.UtcNow.AddYears(-cid - 20);
+                int cid = rdm.Next(1, 49);
+                DateTime dob = DateTime.UtcNow.AddYears(cid);
                 var customer = new Market { CountryId = countries[cid] };
                 customers[i] = customer;
             }
